@@ -25,5 +25,7 @@ O projeto foi criado para proporcionar mais segurança e tranquilidade tanto par
 
 Observação:
 O projeto está em andamento e falta adicionar mais funcionalidades, pois será apresentado como TCC para a graduação de Ciência da Computação.
+
 Acesse o arquivo videofuncionando.mp4.
+
 
