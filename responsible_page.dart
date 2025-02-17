@@ -1,9 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:tccassistencia/alerta.dart';
+import 'package:tccassistencia/add_clinica_screen.dart';
+import 'package:tccassistencia/add_medication_screen.dart';
+import 'package:tccassistencia/alert_screen.dart';
+import 'package:tccassistencia/consulta.dart';
+import 'package:tccassistencia/lookmedication.dart';
 
-import 'package:tccassistencia/relatoriomedicacoes.dart';
+import 'package:tccassistencia/main.dart';
+import 'package:tccassistencia/relatorioexercicio.dart'; // Tela de relatório de exercícios
+import 'package:tccassistencia/relatoriomedicacoes.dart'; // Tela de relatório de remédios
+import 'package:tccassistencia/adicionar_idoso.dart'; // Tela para adicionar idoso
+import 'package:tccassistencia/ver_idosos.dart'; // Tela para ver idosos
+import 'package:firebase_auth/firebase_auth.dart'; // Para logout
+
 
 class ResponsiblePage extends StatelessWidget {
+  void _logout(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,106 +29,169 @@ class ResponsiblePage extends StatelessWidget {
         title: Text(
           'Página do Responsável',
           style: TextStyle(
-            fontSize: 24, // Tamanho maior da fonte
-            fontWeight: FontWeight.bold, // Fonte em negrito
-            color: Colors.white, // Cor do texto
-            letterSpacing: 1.5, // Espaçamento entre letras
-            shadows: [
-              Shadow(
-                color: Colors.black.withOpacity(0.5), // Cor da sombra
-                offset: Offset(2, 2), // Deslocamento da sombra
-                blurRadius: 4, // Desfoque da sombra
-              ),
-            ],
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
           ),
         ),
-        backgroundColor: Colors.blueAccent, // Cor de fundo do cabeçalho
-        elevation: 10, // Sombra do cabeçalho
+        centerTitle: true,
+        backgroundColor: Colors.teal,
+        elevation: 5,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.exit_to_app),
+            onPressed: () => _logout(context),
+            tooltip: 'Sair',
+          ),
+        ],
       ),
-      backgroundColor: Colors.lightBlue[50], // Cor de fundo da interface
+      backgroundColor: Colors.teal[50],
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center, // Centraliza os botões verticalmente
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context)=> MedicationLogScreen()),
-                      );
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, // Cor do texto do botão
-                  backgroundColor: Colors.blue, // Cor de fundo do botão
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildElevatedButton(
+                  context,
+                  'Relatório de Remédios',
+                  Colors.teal,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => MedicationLogScreen()),
+                    );
+                  },
                 ),
-                child: Text('Relatório de Remédios'),
-              ),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  
-                  // Adicione a navegação para Relatório de Exercícios
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, // Cor do texto do botão
-                  backgroundColor: Colors.blue, // Cor de fundo do botão
+                 SizedBox(height: 16.0),
+                _buildElevatedButton(
+                  context,
+                  'Adicionar Remédios',
+                  Colors.green,
+                  () {
+                     Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AddMedicationScreen()),
+                    );
+                  },
                 ),
-                child: Text('Relatório de Exercícios'),
-              ),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context)=> AlertPage()),
-                      );
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, // Cor do texto do botão
-                  backgroundColor: Colors.red, // Cor de fundo do botão
+                 SizedBox(height: 16.0),
+                _buildElevatedButton(
+                  context,
+                  'Ver Remédios',
+                  const Color.fromARGB(255, 47, 136, 50),
+                  () {
+                     Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => LookMedicationScreen()),
+                    );
+                  },
                 ),
-                child: Text('Emergência'),
-              ),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  // Adicione a navegação para Adicionar Remédios
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, // Cor do texto do botão
-                  backgroundColor: Colors.green, // Cor de fundo do botão
+                SizedBox(height: 16.0),
+                _buildElevatedButton(
+                  context,
+                  'Relatório de Exercícios',
+                  Colors.teal,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RelatorioExercicio()),
+                    );
+                  },
                 ),
-                child: Text('Adicionar Remédios'),
-              ),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  // Adicione a navegação para Registrar Consulta
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, // Cor do texto do botão
-                  backgroundColor: Colors.orange, // Cor de fundo do botão
+                SizedBox(height: 16.0),
+                _buildElevatedButton(
+                  context,
+                  'Emergência',
+                  Colors.red,
+                  () {
+                     Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AlertScreen()),
+                    );
+                  },
                 ),
-                child: Text('Registrar Consulta'),
-              ),
-              SizedBox(height: 16.0),
-              ElevatedButton(
-                onPressed: () {
-                  // Adicione a navegação para Consultas Agendadas
-                },
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white, // Cor do texto do botão
-                  backgroundColor: Colors.purple, // Cor de fundo do botão
+               
+                SizedBox(height: 16.0),
+                _buildElevatedButton(
+                  context,
+                  'Registrar Consulta',
+                  Colors.orange,
+                  () {
+                   Navigator.push(
+                  context,
+               MaterialPageRoute(
+                 builder: (context) => AddClinicaScreen(),
+            ),
+        );  
+                    
+                  },
                 ),
-                child: Text('Consultas Agendadas'),
-              ),
-            ],
+                SizedBox(height: 16.0),
+                _buildElevatedButton(
+                  context,
+                  'Consultas Agendadas',
+                  Colors.purple,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => ClinicasListPage()),
+                    );
+                  },
+                ),
+                SizedBox(height: 16.0),
+                _buildElevatedButton(
+                  context,
+                  'Adicionar Idoso',
+                  Colors.blue,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => AdicionarIdosoScreen()),
+                    );
+                  },
+                ),
+                SizedBox(height: 16.0),
+                _buildElevatedButton(
+                  context,
+                  'Ver Idosos',
+                  Colors.indigo,
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => VerIdososScreen()),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-}
+
+  ElevatedButton _buildElevatedButton(BuildContext context, String title, Color color, VoidCallback onPressed) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.symmetric(vertical: 15),
+        backgroundColor: color,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+        ),
+        elevation: 5,
+      ),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+} 

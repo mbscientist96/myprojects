@@ -8,7 +8,7 @@ import 'package:flutter/material.dart'; // Import necessário para usar tipos re
 /// Classe que representa uma clínica.
 /// Contém informações básicas como [id], [nome], [telefone] e [horario].
 class Clinica {
-  final int id;
+  final String id;
   final String nome;
   final String telefone;
   final String horario;

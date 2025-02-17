@@ -1,52 +1,55 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // Importando Firestore
-import 'clinica.dart'; // Importando a classe Clinica
-import 'add_clinica_screen.dart';
 
-class ClinicasListPage extends StatefulWidget {
-  @override
-  _ClinicasListPageState createState() => _ClinicasListPageState();
+import 'package:flutter/material.dart';
+import 'dart:async';
+import 'db_helper.dart';
+
+void main() {
+  runApp(MyApp());
 }
 
-class _ClinicasListPageState extends State<ClinicasListPage> {
-  List<Clinica> _clinicas = [];
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Assistência de Medicação',
+      theme: ThemeData(
+        primarySwatch: Colors.teal,
+      ),
+      home: LookMedicationScreen(),
+    );
+  }
+}
+
+class LookMedicationScreen extends StatefulWidget {
+  @override
+  _LookMedicationScreenState createState() => _LookMedicationScreenState();
+}
+
+class _LookMedicationScreenState extends State<LookMedicationScreen> {
+  List<Map<String, dynamic>> medicamentos = [];
   double _fontSize = 18.0;
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _fetchClinicasFromFirestore(); // Busca as clínicas ao inicializar a página
+    _loadMedications();
   }
 
-  // Função para buscar as clínicas do Firestore
-  Future<void> _fetchClinicasFromFirestore() async {
-    final snapshot = await FirebaseFirestore.instance.collection('clinicas').get();
+  _loadMedications() async {
+    final data = await DBHelper().getAllMedications();
     setState(() {
-      _clinicas = snapshot.docs.map((doc) {
-        final data = doc.data();
-        return Clinica(
-          id: doc.id, // ID da clínica no Firestore
-          nome: data['nome'] ?? '',
-          telefone: data['telefone'] ?? '',
-          horario: data['horario'] ?? '',
-        );
-      }).toList();
+      medicamentos = List.from(data);
     });
   }
 
-  // Função para deletar clínica do Firestore
-  Future<void> _deleteClinicaFromFirestore(String clinicaId) async {
-    try {
-      await FirebaseFirestore.instance.collection('clinicas').doc(clinicaId).delete();
-      setState(() {
-        _clinicas.removeWhere((clinica) => clinica.id == clinicaId);
-      });
-    } catch (e) {
-      print('Erro ao deletar clínica: $e');
-    }
+  TimeOfDay _parseTime(String time) {
+    final parts = time.split(':');
+    final hour = int.parse(parts[0]);
+    final minute = int.parse(parts[1]);
+    return TimeOfDay(hour: hour, minute: minute);
   }
 
-  // Função para ajustar o tamanho da fonte
   void _showFontSizeAdjustDialog() {
     showDialog(
       context: context,
@@ -84,24 +87,10 @@ class _ClinicasListPageState extends State<ClinicasListPage> {
     );
   }
 
-  // Navega para a tela de adicionar clínica
-  void _navigateToAddClinicaScreen() async {
-    final newClinica = await Navigator.push<Clinica>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddClinicaScreen(
-          onSave: (clinica) {
-            // A nova clínica será retornada via Navigator.pop
-          },
-        ),
-      ),
-    );
-
-    if (newClinica != null) {
-      setState(() {
-        _clinicas.add(newClinica);
-      });
-    }
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -130,11 +119,11 @@ class _ClinicasListPageState extends State<ClinicasListPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.local_hospital, size: screenWidth * 0.08, color: Colors.white),
+                Icon(Icons.medical_services, size: screenWidth * 0.08, color: Colors.white),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Clínicas',
+                    'Remédios',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: screenWidth * 0.10,
@@ -165,9 +154,9 @@ class _ClinicasListPageState extends State<ClinicasListPage> {
         ),
       ),
       body: ListView.builder(
-        itemCount: _clinicas.length,
+        itemCount: medicamentos.length,
         itemBuilder: (context, index) {
-          final clinica = _clinicas[index];
+          final medicamento = medicamentos[index];
 
           return Card(
             margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.02, vertical: screenHeight * 0.01),
@@ -179,43 +168,17 @@ class _ClinicasListPageState extends State<ClinicasListPage> {
             child: ListTile(
               contentPadding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05, vertical: screenHeight * 0.02),
               title: Text(
-                clinica.nome,
+                medicamento['name'],
                 style: TextStyle(fontSize: _fontSize, fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
-                'Telefone: ${clinica.telefone}\nHorário: ${clinica.horario}',
+                'Hora: ${medicamento['time']}',
                 style: TextStyle(fontSize: _fontSize - 2),
-              ),
-              trailing: IconButton(
-                icon: Icon(Icons.delete, color: Colors.red),
-                onPressed: () async {
-                  // Remove da lista local
-                  setState(() {
-                    _clinicas.removeAt(index);
-                  });
-
-                  // Remove do Firestore
-                  await _deleteClinicaFromFirestore(clinica.id); // Passa o ID correto da clínica
-                },
               ),
             ),
           );
         },
       ),
-      floatingActionButton: ElevatedButton(
-        onPressed: _navigateToAddClinicaScreen,
-        child: Text('Adicionar Clínica'),
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          backgroundColor: Colors.orange,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-          elevation: 5.0,
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }

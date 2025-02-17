@@ -14,9 +14,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Inicializa o Awesome Notifications
   await AwesomeNotifications().initialize(
-    null, // Ícone padrão do app
+    null,
     [
       NotificationChannel(
         channelKey: 'medication_channel',
@@ -31,90 +30,13 @@ void main() async {
     debug: true,
   );
 
-  // Solicita permissão para enviar notificações
   await AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
     if (!isAllowed) {
       AwesomeNotifications().requestPermissionToSendNotifications();
     }
   });
 
-  await AwesomeNotifications().requestPermissionToSendNotifications(
-    channelKey: 'medication_channel',
-    permissions: [
-      NotificationPermission.Alert,
-      NotificationPermission.Sound,
-      NotificationPermission.Badge,
-      NotificationPermission.Vibration,
-      NotificationPermission.Light,
-    ],
-  );
-  
   runApp(MyApp());
-}
-
-void createMedicationReminderNotification() {
-  AwesomeNotifications().createNotification(
-    content: NotificationContent(
-      id: 10, 
-      channelKey: 'medication_channel',
-      title: 'Hora de tomar o remédio!',
-      body: 'Não se esqueça de tomar o seu medicamento.',
-      bigPicture: 'asset://assets/medication_reminder.png', 
-      notificationLayout: NotificationLayout.BigPicture,
-      displayOnForeground: true,
-      autoDismissible: false,
-    ),
-    actionButtons: [
-      NotificationActionButton(
-        key: 'MARK_DONE',
-        label: 'Tomar Remédio',
-        autoDismissible: true, 
-      ),
-      NotificationActionButton(
-        key: 'LATER',
-        label: 'Lembrar-me mais tarde',
-        autoDismissible: false,
-      ),
-    ],
-  );
-}
-
-void scheduleMedicationAlarmNotification(DateTime scheduledTime) {
-  AwesomeNotifications().createNotification(
-    content: NotificationContent(
-      id: 10, 
-      channelKey: 'medication_channel',
-      title: 'Alarme de Medicação!',
-      body: 'É hora de tomar seu remédio.',
-      bigPicture: 'asset://assets/medication_reminder.png',
-      notificationLayout: NotificationLayout.BigPicture,
-      displayOnForeground: true,
-      autoDismissible: false,
-      locked: true,
-    ),
-    actionButtons: [
-      NotificationActionButton(
-        key: 'MARK_DONE',
-        label: 'Tomar Remédio',
-        autoDismissible: true,
-      ),
-      NotificationActionButton(
-        key: 'LATER',
-        label: 'Lembrar-me mais tarde',
-        autoDismissible: false,
-      ),
-    ],
-    schedule: NotificationCalendar(
-      year: scheduledTime.year,
-      month: scheduledTime.month,
-      day: scheduledTime.day,
-      hour: scheduledTime.hour,
-      minute: scheduledTime.minute,
-      second: 0,
-      millisecond: 0,
-      repeats: true,
-    ),
-  );
 }
 
 class MyApp extends StatelessWidget {
@@ -124,9 +46,9 @@ class MyApp extends StatelessWidget {
       title: 'Assistência Idosos',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        fontFamily: 'Roboto', // Altere o tipo de fonte para Roboto
+        fontFamily: 'Roboto',
       ),
-      home: LoginPage(), // Definindo a página de login como a página inicial
+      home: LoginPage(),
     );
   }
 }
@@ -179,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Usuário não encontrado no Firestore')),
+          SnackBar(content: Text('Usuário não encontrado no sistema')),
         );
       }
     } catch (e) {
@@ -201,35 +123,37 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Login',
+          'Bem-vindo à Assistência',
           style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.w600,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
             letterSpacing: 1.2,
+            color: Colors.white
           ),
         ),
-        backgroundColor: Colors.blueAccent,
+        backgroundColor: Colors.teal,
         centerTitle: true,
-        elevation: 0,
+        elevation: 4,
       ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.blueAccent, Colors.lightBlueAccent],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            colors: [Colors.teal, Colors.lightBlueAccent],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(24.0),
         child: Center(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                SizedBox(height: 40),
                 Text(
-                  'Bem-vindo!',
+                  'Acesse sua conta',
                   style: TextStyle(
-                    fontSize: 34,
+                    fontSize: 32,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     shadows: [
@@ -242,67 +166,54 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 50),
-                TextField(
+                SizedBox(height: 40),
+                _buildTextField(
                   controller: emailController,
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.email, color: Colors.white),
-                    labelText: 'Email',
-                    labelStyle: TextStyle(color: Colors.white),
-                    filled: true,
-                    fillColor: Colors.white24,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(color: Colors.white),
+                  label: 'Email',
+                  icon: Icons.email,
                 ),
                 SizedBox(height: 20),
-                TextField(
+                _buildTextField(
                   controller: passwordController,
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.lock, color: Colors.white),
-                    labelText: 'Senha',
-                    labelStyle: TextStyle(color: Colors.white),
-                    filled: true,
-                    fillColor: Colors.white24,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 16),
-                  ),
+                  label: 'Senha',
+                  icon: Icons.lock,
                   obscureText: true,
-                  style: TextStyle(color: Colors.white),
                 ),
                 SizedBox(height: 40),
                 ElevatedButton(
                   onPressed: _login,
                   style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.blueAccent, backgroundColor: Colors.white, padding: EdgeInsets.symmetric(vertical: 16),
+                    foregroundColor: Colors.teal, backgroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                     elevation: 6,
-                    shadowColor: Colors.black38,
-                    textStyle: TextStyle(
+                  ),
+                  child: Text(
+                    'Entrar',
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: Text('Entrar'),
                 ),
                 SizedBox(height: 16),
-                TextButton(
+                ElevatedButton(
                   onPressed: _navigateToRegister,
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.teal, backgroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 6,
+                  ),
                   child: Text(
                     'Cadastre-se',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      decoration: TextDecoration.underline,
-                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
@@ -311,6 +222,31 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool obscureText = false,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.teal),
+        labelText: label,
+        labelStyle: TextStyle(color: Colors.white),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.2),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: EdgeInsets.symmetric(vertical: 16),
+      ),
+      obscureText: obscureText,
+      style: TextStyle(color: Colors.white),
     );
   }
 }

@@ -38,6 +38,7 @@ class MedicationListScreen extends StatefulWidget {
   @override
   _MedicationListScreenState createState() => _MedicationListScreenState();
 }
+
 void _registerMedicationTaken(int medicationId, String medicationName) async {
   final now = DateTime.now();
   final formattedTime = '${now.hour}:${now.minute.toString().padLeft(2, '0')}';
@@ -51,7 +52,7 @@ void _registerMedicationTaken(int medicationId, String medicationName) async {
       'medication_id': medicationId,
       'medication_name': medicationName,
       'time_taken': formattedTime,
-      'timestamp': now,  // Adiciona o timestamp para ordenação futura
+      'timestamp': now,
     });
     print('Ação registrada no Firebase com sucesso!');
   } catch (e) {
@@ -99,7 +100,6 @@ class _MedicationListScreenState extends State<MedicationListScreen> {
       final medicationTime = DateTime(now.year, now.month, now.day, time.hour, time.minute);
       final isButtonEnabled = now.isAfter(medicationTime) && !(buttonStates[med['id']] ?? false);
 
-      // O botão será habilitado somente no horário ou após o horário da medicação
       newButtonStates[med['id']] = isButtonEnabled;
     }
 
@@ -311,32 +311,17 @@ class _MedicationListScreenState extends State<MedicationListScreen> {
                     },
                   ),
                   SizedBox(width: 8),
-                 ElevatedButton(
-  onPressed: isButtonEnabled ? () {
-    _cancelAndRescheduleNotification(
-      medicamento['id'], 
-      medicamento['name'], 
-      time
-    );
-    
-    // Registra a ação no Firebase
-    _registerMedicationTaken(medicamento['id'], medicamento['name']);
-    
-    setState(() {
-      buttonStates[medicamento['id']] = false;
-    });
-  } : null,
-  child: Text(
-    'Tomar Remédio',
-    textAlign: TextAlign.center,
-    style: TextStyle(fontSize: _fontSize - 2),
-  ),
-  style: ElevatedButton.styleFrom(
-    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04, vertical: screenHeight * 0.02),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
+                  ElevatedButton(
+                    onPressed: isButtonEnabled
+                        ? () {
+                            setState(() {
+                              buttonStates[medicamento['id']] = false;
+                            });
+                            _registerMedicationTaken(medicamento['id'], medicamento['name']);
+                            _cancelAndRescheduleNotification(medicamento['id'], medicamento['name'], time);
+                          }
+                        : null,
+                    child: Text('Tomar'),
                   ),
                 ],
               ),
@@ -344,15 +329,29 @@ class _MedicationListScreenState extends State<MedicationListScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AddMedicationScreen()),
-          );
-          _loadMedications();
-        },
-        child: Icon(Icons.add),
+      floatingActionButton: Align(
+        alignment: Alignment.bottomCenter,
+        child: Padding(
+          padding: EdgeInsets.only(bottom: 17.0),
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddMedicationScreen()),
+              );
+              _loadMedications();
+            },
+            icon: Icon(Icons.add, color: Colors.white),
+            label: Text(
+              'Adicionar remédio',
+              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.teal,
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            ),
+          ),
+        ),
       ),
     );
   }

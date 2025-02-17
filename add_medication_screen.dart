@@ -94,15 +94,25 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Adicionar Medicação'),
+        title: Text('Adicionar Medicação', style: TextStyle(color: Colors.white, fontSize: 25)),
+        backgroundColor: Colors.teal,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(12.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
               controller: _nameController,
-              decoration: InputDecoration(labelText: 'Nome do Remédio'),
+              decoration: InputDecoration(
+                labelText: 'Nome do Remédio',
+                labelStyle: TextStyle(color: Colors.teal),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide(color: Colors.teal),
+                ),
+              ),
+              style: TextStyle(fontSize: 30),
             ),
             SizedBox(height: 20),
             Row(
@@ -112,21 +122,26 @@ class _AddMedicationScreenState extends State<AddMedicationScreen> {
                     _selectedTime != null
                         ? 'Horário: ${_selectedTime!.format(context)}'
                         : 'Selecione um horário',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: 16, color: Colors.teal),
                   ),
                 ),
                 TextButton(
                   onPressed: () => _selectTime(context),
-                  child: Text('Escolher Horário'),
+                  child: Text('Escolher Horário', style: TextStyle(color: Colors.teal)),
                 ),
               ],
             ),
             Spacer(),
             ElevatedButton(
               onPressed: _saveMedication,
-              child: Text('Salvar'),
+              child: Text('Salvar', style: TextStyle(fontSize: 30, color: Colors.teal)),
               style: ElevatedButton.styleFrom(
                 minimumSize: Size(double.infinity, 50),
+                backgroundColor: Colors.white, // Cor do botão alterada para branco
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(color: Colors.teal), // Borda teal
+                ),
               ),
             ),
           ],

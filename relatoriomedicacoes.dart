@@ -40,8 +40,7 @@ class MedicationLogScreen extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 // Tamanho da fonte ajustado
-                fontSize: screenWidth * 0.05,  // Reduzido de 0.08 para 0.06
-                fontWeight: FontWeight.bold,
+                fontSize: 20,  
                 color: Colors.white,
                 fontFamily: 'RobotoMono',
                 shadows: [

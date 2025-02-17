@@ -1,39 +1,17 @@
-
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:async';
 
-void main() {
-  runApp(AssistenciaApp());
-}
+class Exercicio {
+  final String nome;
+  final int duracao; // Duração em segundos
+  final String tutorial;
 
-class AssistenciaApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Exercícios',
-      theme: ThemeData(
-        primarySwatch: Colors.teal,
-        hintColor: Colors.orange,
-        textTheme: TextTheme(
-          bodyLarge: TextStyle(fontSize: 18.0, color: Colors.black87),
-          bodyMedium: TextStyle(fontSize: 16.0, color: Colors.black54),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-            backgroundColor: Colors.orange, // Background color
-            foregroundColor: Colors.white, // Text color
-            textStyle: TextStyle(fontSize: 18),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-            elevation: 5.0,
-          ),
-        ),
-      ),
-      home: ExercicioListScreen(),
-    );
-  }
+  Exercicio({
+    required this.nome,
+    required this.duracao,
+    required this.tutorial,
+  });
 }
 
 class ExercicioListScreen extends StatelessWidget {
@@ -41,29 +19,26 @@ class ExercicioListScreen extends StatelessWidget {
     Exercicio(
       nome: 'Alongamento de Braços',
       duracao: 5,
-      tutorial: 'Estenda os braços para frente, para cima e para os lados, '
-          'segurando cada posição por alguns segundos.',
+      tutorial: 'Estenda os braços para frente, para cima e para os lados, segurando cada posição por alguns segundos.',
     ),
     Exercicio(
       nome: 'Alongamento de Pescoço',
-      duracao: 2,
+      duracao: 5,
       tutorial: 'Gire o pescoço lentamente para os lados, para cima e para baixo.',
     ),
     Exercicio(
       nome: 'Pé de Galo',
-      duracao: 1,
-      tutorial: 'Fique em um pé só, segurando em uma cadeira para apoio. '
-          'Tente manter o equilíbrio por 1 minuto.',
+      duracao: 5,
+      tutorial: 'Fique em um pé só, segurando em uma cadeira para apoio. Tente manter o equilíbrio por 5 segundos.',
     ),
     Exercicio(
       nome: 'Respiração Profunda',
-      duracao: 1,
-      tutorial: 'Inspire profundamente pelo nariz, segure por alguns segundos e expire '
-          'lentamente pela boca. Repita várias vezes.',
+      duracao: 5,
+      tutorial: 'Inspire profundamente pelo nariz, segure por alguns segundos e expire lentamente pela boca. Repita várias vezes.',
     ),
     Exercicio(
       nome: 'Rotação de Ombros',
-      duracao: 2,
+      duracao: 5,
       tutorial: 'Mova os ombros em círculos para a frente e para trás, ajudando a aliviar a tensão.',
     ),
   ];
@@ -71,42 +46,14 @@ class ExercicioListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.teal.shade100,
       appBar: AppBar(
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.teal, const Color.fromARGB(255, 105, 146, 215)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
         title: Text(
-          'Exercícios',
-          style: TextStyle(
-            fontSize: 30.0,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'RobotoMono',
-            letterSpacing: 1.5,
-            color: Colors.white,
-            shadows: [
-              Shadow(
-                offset: Offset(3.0, 3.0),
-                blurRadius: 12.0,
-                color: Colors.black.withOpacity(0.5),
-              ),
-            ],
-          ),
+          'Exercícios Físicos',
+          style: TextStyle(fontSize: 28, color: Colors.white),
+           
         ),
         centerTitle: true,
-        elevation: 10.0,
+        backgroundColor: Colors.teal,
       ),
       body: ListView.builder(
         itemCount: exercicios.length,
@@ -117,18 +64,6 @@ class ExercicioListScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class Exercicio {
-  final String nome;
-  final int duracao; // Duração em minutos
-  final String tutorial;
-
-  Exercicio({
-    required this.nome,
-    required this.duracao,
-    required this.tutorial,
-  });
 }
 
 class ExercicioTile extends StatefulWidget {
@@ -147,7 +82,7 @@ class _ExercicioTileState extends State<ExercicioTile> {
 
   void _startTimer() {
     setState(() {
-      _secondsRemaining = widget.exercicio.duracao * 60;
+      _secondsRemaining = widget.exercicio.duracao;
       _isRunning = true;
     });
 
@@ -159,6 +94,7 @@ class _ExercicioTileState extends State<ExercicioTile> {
         } else {
           _isRunning = false;
           timer.cancel();
+          _logExercicio();
         }
       });
     });
@@ -171,6 +107,18 @@ class _ExercicioTileState extends State<ExercicioTile> {
     });
   }
 
+  Future<void> _logExercicio() async {
+    try {
+      await FirebaseFirestore.instance.collection('relatorios').add({
+        'exercicio': widget.exercicio.nome,
+        'data_hora': FieldValue.serverTimestamp(),
+      });
+      print("Exercício registrado com sucesso.");
+    } catch (e) {
+      print("Erro ao registrar exercício: $e");
+    }
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
@@ -181,56 +129,55 @@ class _ExercicioTileState extends State<ExercicioTile> {
   Widget build(BuildContext context) {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      elevation: 5.0,
+      elevation: 8,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
-      color: Colors.white,
       child: Padding(
-        padding: EdgeInsets.all(15),
+        padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               widget.exercicio.nome,
-              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold, color: Colors.teal),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.teal),
             ),
             SizedBox(height: 10),
             Text(
               widget.exercicio.tutorial,
-              style: TextStyle(fontSize: 18.0, color: Colors.black87),
-              textAlign: TextAlign.justify, // Justifica o texto para melhor aparência
+              style: TextStyle(fontSize: 16, color: Colors.black87),
             ),
             SizedBox(height: 10),
             if (_isRunning)
               Text(
-                'Tempo restante: ${(_secondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_secondsRemaining % 60).toString().padLeft(2, '0')}',
-                style: TextStyle(fontSize: 18.0, color: Colors.redAccent),
+                'Tempo restante: ${_secondsRemaining}s',
+                style: TextStyle(fontSize: 20, color: Colors.redAccent),
               ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isRunning ? null : _startTimer,
-                    child: Text('Iniciar ${widget.exercicio.duracao} min'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10), // Ajuste no padding do botão
-                      foregroundColor: Colors.white, // Text color
-                      backgroundColor: Colors.orange, // Background color
+                ElevatedButton(
+                  onPressed: _isRunning ? null : _startTimer,
+                  child: Text('Iniciar ${widget.exercicio.duracao} seg'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.teal,
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _isRunning ? _stopTimer : null,
-                    child: Text('Parar'),
-                    style: ElevatedButton.styleFrom(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 12), // Ajuste no padding do botão
-                      foregroundColor: Colors.white, // Text color
-                      backgroundColor: Colors.red, // Background color
+                ElevatedButton(
+                  onPressed: _isRunning ? _stopTimer : null,
+                  child: Text('Parar'),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.red,
+                    padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                 ),
