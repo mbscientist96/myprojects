@@ -24,7 +24,7 @@ Toda a comunicação entre a interface do idoso e a dos responsáveis é realiza
 O projeto foi criado para proporcionar mais segurança e tranquilidade tanto para os idosos quanto para seus responsáveis, ajudando-os a manter uma rotina saudável e segura de maneira simples e eficaz.
 
 Observação:
-O projeto está em andamento e falta adicionar mais funcionalidades, pois será apresentado como TCC para a graduação de Ciência da Computação.
+O projeto está em seu processo final, onde será otimizado processos de interfaces, consumo de API's de voz e geolocalização, aguarde para mais atualizações.
 
 Acesse o arquivo videofuncionando.mp4.
 
